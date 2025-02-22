@@ -16,9 +16,6 @@ const generateRefreshToken = async (userId) => {
 exports.registerUser = asyncHandler(async (req, res) => {
     const { username, password } = req.body;
 
-    console.log("username", username);
-    console.log("password", password);
-
     if (!username || !password) {
         throw new ApiErrors(409, "All fields are required");
     }
@@ -29,21 +26,20 @@ exports.registerUser = asyncHandler(async (req, res) => {
         throw new ApiErrors(409, "Username already exists");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
         username: username.toLowerCase(),
-        password: hashedPassword
+        password: password
     });
 
     return res.status(201).json(new ApiResponse(200, user, "User registered successfully"));
 });
 
+
+
 exports.loginUser = asyncHandler(async (req, res) => {
     const { username, password } = req.body;
-
-    console.log("use", username);
-    console.log("pass", password);
 
     if (!username || !password) {
         throw new ApiErrors(400, "Please enter both username and password");
@@ -57,13 +53,10 @@ exports.loginUser = asyncHandler(async (req, res) => {
         throw new ApiErrors(404, "User does not exist");
     }
 
-    console.log("userr", user);
-
-    const isPasswordValid = await user.isPasswordCorrect(password);
-
-    if (!isPasswordValid) {
-        throw new ApiErrors(401, "Invalid user credentials");
+    if (password !== user.password) {
+        throw new ApiErrors(401, "Incorrect password");
     }
+
 
     const accessToken = await generateAccessToken(user.id);
     const refreshToken = await generateRefreshToken(user.id);
@@ -96,6 +89,7 @@ exports.loginUser = asyncHandler(async (req, res) => {
             )
         );
 });
+
 
 exports.getCurrentUser = asyncHandler(async (req, res) => {
     try {

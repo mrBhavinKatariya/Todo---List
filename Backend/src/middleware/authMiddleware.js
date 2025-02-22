@@ -46,7 +46,72 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
             attributes: { exclude: ["password", "refreshToken"] }
         });
 
-        if (!user) {
+        if (!user) {const jwt = require("jsonwebtoken");
+            const dotenv = require("dotenv");
+            const User = require("../models/UserModel.js"); // Import User Model
+            const asyncHandler = require("../utils/asyncHandler.js");
+            const ApiError = require("../utils/ApiError.js");
+            
+            dotenv.config();
+            
+            // Middleware for authenticating user requests
+            const authenticate = asyncHandler(async (req, res, next) => {
+                const authHeader = req.header("Authorization");
+            
+                if (!authHeader || !authHeader.startsWith("Bearer ")) {
+                    return res.status(401).json({ message: "Access denied. No token provided." });
+                }
+            
+                const token = authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
+                console.log("Received Token:", token);
+            
+                try {
+                    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+                    const user = await User.findByPk(decoded.id); // Fetch user from MySQL
+            
+                    if (!user) {
+                        return res.status(401).json({ message: "User not found. Authentication failed." });
+                    }
+            
+                    req.user = { id: user.id, username: user.username }; // Attach user data to request
+                    next();
+                } catch (error) {
+                    console.error("JWT Verification Error:", error);
+                    res.status(401).json({ message: "Invalid token." });
+                }
+            });
+            
+            // Middleware for verifying JWT access tokens
+            const verifyJWT = asyncHandler(async (req, res, next) => {
+                try {
+                    const authHeader = req.header("Authorization");
+            
+                    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+                        throw new ApiError(401, "Authorization header is missing or invalid");
+                    }
+            
+                    const token = authHeader.split(" ")[1];
+                    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+                    console.log("Decoded Token:", decodedToken); // Debugging statement
+            
+                    const user = await User.findByPk(decodedToken.id, {
+                        attributes: { exclude: ["password", "refreshToken"] }
+                    });
+            
+                    if (!user) {
+                        throw new ApiError(401, "Invalid Access Token");
+                    }
+            
+                    req.user = user;
+                    next();
+                } catch (error) {
+                    console.error("JWT Error:", error);
+                    throw new ApiError(401, error?.message || "Invalid access token");
+                }
+            });
+            
+            module.exports = { authenticate, verifyJWT };
+            
             throw new ApiError(401, "Invalid Access Token");
         }
 
@@ -60,3 +125,4 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
 
 module.exports = verifyJWT;
 
+    
