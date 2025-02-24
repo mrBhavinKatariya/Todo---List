@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useContext } from "react";
 import { getTasks, createTask, deleteTask, updateTask, getCurrentUser } from "../services/api";
 import AuthContext from "../context/AuthContext";
@@ -6,15 +7,14 @@ import { FaPlus, FaTrash, FaCheckCircle, FaEdit, FaSignOutAlt, FaEye, FaTimes } 
 
 function Dashboard() {
   const { token, logout } = useContext(AuthContext);
-  const [tasks, setTasks] = useState([]); 
+  const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
   const [newTaskStatus, setNewTaskStatus] = useState("To Do");
   const [editingTask, setEditingTask] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
-  const [viewingTask, setViewingTask] = useState(null); 
+  const [viewingTask, setViewingTask] = useState(null);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     if (token) {
@@ -22,17 +22,14 @@ function Dashboard() {
     }
   }, [token]);
 
- 
   const fetchCurrentUserAndTasks = async () => {
     try {
-   
-      const userResponse = await getCurrentUser(token);
-      setCurrentUser(userResponse.data);
+      const userResponse = await getCurrentUser();
+      setCurrentUser(userResponse);
 
-    
-      const tasksResponse = await getTasks(token);
-      console.log("Tasks response:", tasksResponse); 
-      setTasks(Array.isArray(tasksResponse) ? tasksResponse : []); 
+      const tasksResponse = await getTasks();
+      console.log("Tasks response:", tasksResponse);
+      setTasks(Array.isArray(tasksResponse) ? tasksResponse : []);
     } catch (error) {
       console.error("Error fetching data:", error);
       alert("Failed to fetch data. Please try again.");
@@ -45,12 +42,9 @@ function Dashboard() {
       return;
     }
     try {
-      await createTask(
-        { title: task, description: "New Task", status: newTaskStatus },
-        token
-      );
-      setTask(""); 
-      setNewTaskStatus("To Do"); 
+      await createTask({ title: task, description: "New Task", status: newTaskStatus });
+      setTask("");
+      setNewTaskStatus("To Do");
       await fetchCurrentUserAndTasks();
     } catch (error) {
       console.error("Error adding task:", error);
@@ -58,71 +52,65 @@ function Dashboard() {
     }
   };
 
-  // Delete a task
   const handleDeleteTask = async (id) => {
     try {
-      await deleteTask(id, token);
-      await fetchCurrentUserAndTasks(); 
+      await deleteTask(id);
+      await fetchCurrentUserAndTasks();
     } catch (error) {
       console.error("Error deleting task:", error);
       alert("Failed to delete task. Please try again.");
     }
   };
 
- 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      await updateTask(taskId, { status: newStatus }, token);
-      await fetchCurrentUserAndTasks(); // Refresh task list
+      await updateTask(taskId, { status: newStatus });
+      await fetchCurrentUserAndTasks();
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update task status. Please try again.");
     }
   };
 
-
   const startEditing = (task) => {
     setEditingTask(task.id);
     setEditedTitle(task.title);
   };
 
- 
   const handleTitleUpdate = async (taskId) => {
     try {
-      await updateTask(taskId, { title: editedTitle }, token);
-      setEditingTask(null); 
-      await fetchCurrentUserAndTasks(); 
+      await updateTask(taskId, { title: editedTitle });
+      setEditingTask(null);
+      await fetchCurrentUserAndTasks();
     } catch (error) {
       console.error("Error updating title:", error);
       alert("Failed to update task title. Please try again.");
     }
   };
 
- 
   const viewTaskDetails = (task) => {
     setViewingTask(task);
   };
 
-  
   const closeTaskDetails = () => {
     setViewingTask(null);
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const getTaskBackgroundColor = (status) => {
     switch (status) {
       case "To Do":
-        return "bg-gray-700"; 
+        return "bg-gray-700";
       case "In Progress":
         return "bg-blue-700";
       case "Completed":
         return "bg-green-700";
       default:
-        return "bg-gray-700"; 
+        return "bg-gray-700";
     }
   };
 

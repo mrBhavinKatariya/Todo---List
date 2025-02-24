@@ -19,14 +19,13 @@ const User = sequelize.define("User", {
     }
 });
 
-// Hash the user's password before saving it to the database
-// User.beforeCreate(async (user) => {
-//     user.password = await bcrypt.hash(user.password, 10);
-// });
 
-// Method to compare the provided password with the hashed password in the database
-// User.prototype.isPasswordCorrect = async function (password) {
-//     return await bcrypt.compare(password, this.password);
-// };
+User.beforeCreate(async (user) => {
+    user.password = await bcrypt.hash(user.password, 10);
+});
+
+User.prototype.isPasswordCorrect = async function (password) {
+    return await bcrypt.compare(password, this.password);
+};
 
 module.exports = User;

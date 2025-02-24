@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const User = require("../models/UserModel.js"); // Import User Model
+const User = require("../models/UserModel.js"); 
 const asyncHandler = require("../utils/asyncHandler.js");
 dotenv.config();
 
@@ -12,13 +12,12 @@ const authenticate = async (req, res, next) => {
     
     try {
         const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-        const user = await User.findByPk(decoded.id); // Fetch user from MySQL
-
+        const user = await User.findByPk(decoded.id); 
         if (!user) {
             return res.status(401).json({ message: "User not found. Authentication failed." });
         }
 
-        req.user = { id: user.id, username: user.username }; // Attach user data to request
+        req.user = { id: user.id, username: user.username };
         next();
     } catch (error) {
         res.status(400).json({ message: "Invalid token." });
@@ -40,7 +39,7 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        console.log('Decoded Token:', decodedToken); // Debugging statement
+        console.log('Decoded Token:', decodedToken); 
 
         const user = await User.findByPk(decodedToken.id, {
             attributes: { exclude: ["password", "refreshToken"] }
@@ -48,13 +47,13 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
 
         if (!user) {const jwt = require("jsonwebtoken");
             const dotenv = require("dotenv");
-            const User = require("../models/UserModel.js"); // Import User Model
+            const User = require("../models/UserModel.js"); 
             const asyncHandler = require("../utils/asyncHandler.js");
             const ApiError = require("../utils/ApiError.js");
             
             dotenv.config();
             
-            // Middleware for authenticating user requests
+         
             const authenticate = asyncHandler(async (req, res, next) => {
                 const authHeader = req.header("Authorization");
             
@@ -62,18 +61,18 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
                     return res.status(401).json({ message: "Access denied. No token provided." });
                 }
             
-                const token = authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
+                const token = authHeader.split(" ")[1]; 
                 console.log("Received Token:", token);
             
                 try {
                     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-                    const user = await User.findByPk(decoded.id); // Fetch user from MySQL
+                    const user = await User.findByPk(decoded.id); 
             
                     if (!user) {
                         return res.status(401).json({ message: "User not found. Authentication failed." });
                     }
             
-                    req.user = { id: user.id, username: user.username }; // Attach user data to request
+                    req.user = { id: user.id, username: user.username };
                     next();
                 } catch (error) {
                     console.error("JWT Verification Error:", error);

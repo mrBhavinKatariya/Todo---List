@@ -20,10 +20,16 @@ function RegisterPage() {
             return;
         }
         try {
-            await registerUser(credentials);
+            const response = await registerUser(credentials);
+            const { accessToken, user } = response.data;
+            console.log("Access Token:", accessToken);
+    
+            localStorage.setItem("token", accessToken);
+            localStorage.setItem("user", JSON.stringify(user)); 
+            
             navigate("/dashboard");
         } catch (error) {
-            console.error("Error during registration:", error); // Add detailed logging
+            console.error("Error during registration:", error);
             if (error.response && error.response.status === 409) {
                 alert("Username already exists");
             } else {
@@ -52,7 +58,7 @@ function RegisterPage() {
                                 className="w-full px-4 py-3 bg-gray-700 border-2 border-gray-600 rounded-lg 
                                 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/50
                                 text-white placeholder-gray-400 transition-all"
-                                placeholder="CyberWarrior123"
+                                placeholder="Your Good Name"
                                 onChange={(e) => setCredentials({...credentials, username: e.target.value})}
                             />
                         </div>
@@ -104,7 +110,7 @@ function RegisterPage() {
                     </div>
                 </div>
 
-                {/* Glowing border effect */}
+             
                 <div className="absolute inset-0 rounded-xl border border-cyan-500/20 pointer-events-none"></div>
             </div>
         </div>

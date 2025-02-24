@@ -24,9 +24,8 @@ function LoginPage() {
     
         try {
             const response = await loginUser(credentials);
-            console.log("Full API Response:", response); // Debugging
+            console.log("Full API Response:", response); 
     
-            // Ensure response structure is correct
             if (!response || !response.data) {
                 setErrorMessage("Invalid API response. Please try again.");
                 return;
@@ -35,7 +34,6 @@ function LoginPage() {
             const { accessToken, user } = response.data;
             console.log("Access Token:", accessToken);
     
-            // Store token in AuthContext & localStorage
             login(accessToken);
             localStorage.setItem("token", accessToken);
             localStorage.setItem("user", JSON.stringify(user)); 
